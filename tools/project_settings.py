@@ -1,5 +1,5 @@
-EXE_NAME = "project"
-PROJECT_NAME = "TestWorkspace"
+EXE_NAME = "pbr-runtime"
+PROJECT_NAME = "PBR"
 
 TOOLS_DIR = "tools"
 
