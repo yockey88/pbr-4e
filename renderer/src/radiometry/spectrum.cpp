@@ -93,5 +93,99 @@ namespace pbr {
   float BlackbodySpectrum::Sample(float wavelength) const {
     return Blackbody(wavelength , temp) * normalization_factor;
   }
+      
+  SampledSpectrum::SampledSpectrum() {
+    for (auto i = 0; i < kSpectrumSamples; ++i) {
+      values[i] = 0.f;
+    }
+  }
+
+  SampledSpectrum::SampledSpectrum(const std::span<const float>& v) {
+    for (auto i = 0; i < kSpectrumSamples; ++i) {
+      values[i] = v[i];
+    }
+  }
+
+  SampledSpectrum::SampledSpectrum(float c) {
+    values.fill(c);
+  }
+
+  float SampledSpectrum::operator[](size_t i) const {
+    return values[i];
+  }
+
+  float& SampledSpectrum::operator[](size_t i) {
+    return values[i];
+  }
+      
+  SampledSpectrum& SampledSpectrum::operator+=(const SampledSpectrum& s) {
+    for (int32_t i = 0; i < kSpectrumSamples; ++i) {
+      values[i] += s[i];
+    }
+    return *this;
+  }
+      
+  SampledSpectrum SampledSpectrum::SaveDiv(const SampledSpectrum& a , const SampledSpectrum& b) {
+    return SampledSpectrum(
+      std::array<const float , kSpectrumSamples>{
+        ((b[0] != 0) ? a[0] / b[0] : 0.f) ,
+        ((b[1] != 0) ? a[1] / b[1] : 0.f) ,
+        ((b[2] != 0) ? a[2] / b[2] : 0.f) ,
+        ((b[3] != 0) ? a[3] / b[3] : 0.f) ,
+      }
+    );
+  }
+
+  float SampledWavelengths::operator[](size_t i) const {
+    return lambda[i];
+  }
+
+  float& SampledWavelengths::operator[](size_t i) {
+    return lambda[i];
+  }
+      
+  SampledSpectrum SampledWavelengths::PDF() const {
+    return SampledSpectrum(pdf);
+  }
+      
+  void SampledWavelengths::TerminateSecondary() {
+    if (SecondaryTerminated()) {
+      return;
+    }
+
+    for (int32_t i = 1; i < kSpectrumSamples; ++i) {
+      pdf[i] = 0.f;
+    }
+    pdf[0] /= kSpectrumSamples;
+  }
+      
+  bool SampledWavelengths::SecondaryTerminated() const {
+    for (int32_t i = 1; i < kSpectrumSamples; ++i) {
+      if (pdf[i] != 0.f) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  SampledWavelengths SampledWavelengths::SampledUniform(float u , float lmin , float lmax) {
+    SampledWavelengths swl;
+    swl.lambda[0] = Lerp(u , lmin , lmax);
+    
+    float delta = (lmax - lmin) / kSpectrumSamples;
+    for (int32_t i = 1; i < kSpectrumSamples; ++i) {
+      swl.lambda[i] = swl.lambda[i - 1] + delta;
+
+      if (swl.lambda[i] > lmax) {
+        swl.lambda[i] = lmin + (swl.lambda[i] - lmax);
+      }
+    }
+
+    for (int32_t i = 0; i < kSpectrumSamples; ++i) {
+      swl.pdf[i] = 1 / (lmax - lmin);
+    }
+
+    return swl;
+  }
 
 } // namespace pbr

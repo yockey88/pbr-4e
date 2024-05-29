@@ -6,6 +6,7 @@
 
 #include <span>
 #include <vector>
+#include <array>
 
 #include "base/ref.hpp"
 
@@ -88,9 +89,39 @@ namespace pbr {
       float normalization_factor;
   };
 
-  class SampledSpectrum : public Spectrum {
+  class SampledSpectrum {
     public:
+      SampledSpectrum();
+      SampledSpectrum(const std::span<const float>& values);
+      explicit SampledSpectrum(float c);
+
+      float operator[](size_t i) const;
+      float& operator[](size_t i);
+
+      SampledSpectrum& operator+=(const SampledSpectrum& s);
+
+      static SampledSpectrum SaveDiv(const SampledSpectrum& a , const SampledSpectrum& b);
+
     private:
+      std::array<float , kSpectrumSamples> values;
+  };
+
+  class SampledWavelengths {
+    public:
+      float operator[](size_t i) const;
+      float& operator[](size_t i);
+
+      SampledSpectrum PDF() const;
+
+      void TerminateSecondary();
+
+      bool SecondaryTerminated() const;
+      
+      static SampledWavelengths SampledUniform(float u , float lmin = kLambdaMin , float lmax = kLambdaMax);
+
+    private:
+      std::array<float , kSpectrumSamples> lambda;
+      std::array<float , kSpectrumSamples> pdf;
   };
 
 } // namespace pbr
