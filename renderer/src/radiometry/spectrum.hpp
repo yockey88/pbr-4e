@@ -12,6 +12,11 @@
 
 namespace pbr {
 
+  class XYZ;
+  
+  class SampledSpectrum;
+  class SampledWavelengths;
+
   constexpr static float kLightSpeed = 299792458.f;
   constexpr static float kPlancks = 6.62606957e-34f;
   constexpr static float kBoltzmann = 1.3806488e-23f;
@@ -31,6 +36,7 @@ namespace pbr {
 
       virtual float MaxValue() const = 0;
       virtual float Sample(float wavelength) const = 0;
+      virtual SampledSpectrum SampleWavelengths(const SampledWavelengths& wavelengths) const  = 0;
   };
 
   class ConstantSpectrum : public Spectrum {
@@ -42,6 +48,7 @@ namespace pbr {
 
       virtual float MaxValue() const override;
       virtual float Sample(float wavelength) const override;
+      virtual SampledSpectrum SampleWavelengths(const SampledWavelengths& wavelengths) const override;
 
     private:
       float c;
@@ -55,6 +62,7 @@ namespace pbr {
 
       virtual float MaxValue() const override;
       virtual float Sample(float wavelength) const override;
+      virtual SampledSpectrum SampleWavelengths(const SampledWavelengths& wavelengths) const override;
 
     private:
       int32_t lambda_min , lambda_max;
@@ -69,6 +77,7 @@ namespace pbr {
 
       virtual float MaxValue() const override;
       virtual float Sample(float wavelength) const override;
+      virtual SampledSpectrum SampleWavelengths(const SampledWavelengths& wavelengths) const override;
 
     private:
       std::vector<float> lambdas;
@@ -83,6 +92,7 @@ namespace pbr {
 
       virtual float MaxValue() const override;
       virtual float Sample(float wavelength) const override;
+      virtual SampledSpectrum SampleWavelengths(const SampledWavelengths& wavelengths) const override;
 
     private:
       float temp;
@@ -98,7 +108,20 @@ namespace pbr {
       float operator[](size_t i) const;
       float& operator[](size_t i);
 
+      float Average() const;
+
+      SampledSpectrum operator*(float a) const;
+      SampledSpectrum &operator*=(float a);
+
+      SampledSpectrum operator/(float a) const;
+      SampledSpectrum &operator/=(float a);
+
+      SampledSpectrum operator*(const SampledSpectrum &s) const;
+      SampledSpectrum& operator*=(const SampledSpectrum &s);
+
       SampledSpectrum& operator+=(const SampledSpectrum& s);
+
+      XYZ ToXYZ(const SampledWavelengths& lambda);
 
       static SampledSpectrum SaveDiv(const SampledSpectrum& a , const SampledSpectrum& b);
 

@@ -3,8 +3,10 @@
  **/
 #include "radiometry/spectrum.hpp"
 
-#include "math/math.hpp"
 #include <algorithm>
+
+#include "math/math.hpp"
+#include "radiometry/color.hpp"
 
 namespace pbr {
 
@@ -25,6 +27,10 @@ namespace pbr {
 
   float ConstantSpectrum::Sample(float wavelength) const {
     return c;
+  }
+
+  SampledSpectrum ConstantSpectrum::SampleWavelengths(const SampledWavelengths& wavelengths) const {
+    return SampledSpectrum(c); 
   }
       
   DenselySampledSpectrum::DenselySampledSpectrum(Ref<Spectrum> spec , int32_t lmin , int32_t lmax)
@@ -51,6 +57,19 @@ namespace pbr {
     }
 
     return values[offset];
+  }
+
+  SampledSpectrum DenselySampledSpectrum::SampleWavelengths(const SampledWavelengths& wavelengths) const {
+    SampledSpectrum s;
+    for (int32_t i = 0; i < kSpectrumSamples; ++i) {
+      int32_t offset = std::lround(wavelengths[i]) - lambda_min;
+      if (offset < 0 || offset >= values.size()) {
+        s[i] = 0;
+      } else {
+        s[i] = values[offset];
+      }
+    }
+    return s;
   }
       
   PiecewiseLinearSpectrum::PiecewiseLinearSpectrum(const std::span<const float> ls , const std::span<const float> vs) {
@@ -79,6 +98,14 @@ namespace pbr {
     float t = (wavelength - lambdas[o]) / (lambdas[o + 1] - lambdas[o]);
     return Lerp(t , values[o] , values[o + 1]);
   }
+  
+  SampledSpectrum PiecewiseLinearSpectrum::SampleWavelengths(const SampledWavelengths& wavelengths) const {
+    SampledSpectrum s;
+    for (int32_t i = 0; i < kSpectrumSamples; ++i) {
+      s[i] = Sample(wavelengths[i]);
+    }
+    return s;
+  }
 
   BlackbodySpectrum::BlackbodySpectrum(float temp) 
       : temp(temp) {
@@ -92,6 +119,14 @@ namespace pbr {
 
   float BlackbodySpectrum::Sample(float wavelength) const {
     return Blackbody(wavelength , temp) * normalization_factor;
+  }
+  
+  SampledSpectrum BlackbodySpectrum::SampleWavelengths(const SampledWavelengths& wavelengths) const {
+    SampledSpectrum s;
+    for (int32_t i = 0; i < kSpectrumSamples; ++i) {
+      s[i] = Blackbody(wavelengths[i] , temp);
+    }
+    return s;
   }
       
   SampledSpectrum::SampledSpectrum() {
@@ -118,11 +153,71 @@ namespace pbr {
     return values[i];
   }
       
+  float SampledSpectrum::Average() const {
+    float sum = values[0];
+    for (int32_t i = 1; i < kSpectrumSamples; ++i) {
+      sum += values[i];
+    }
+    return sum / kSpectrumSamples;
+  }
+
+  SampledSpectrum SampledSpectrum::operator*(float a) const {
+    SampledSpectrum ret = *this;
+    for (int i = 0; i < kSpectrumSamples; ++i) {
+      ret.values[i] *= a;
+    }
+    return ret;
+  }
+
+  SampledSpectrum& SampledSpectrum::operator*=(float a) {
+    for (int i = 0; i < kSpectrumSamples; ++i) {
+      values[i] *= a;
+    }
+    return *this;
+  }
+
+  SampledSpectrum SampledSpectrum::operator/(float a) const {
+    SampledSpectrum ret = *this;
+    return ret /= a;
+  }
+
+  SampledSpectrum& SampledSpectrum::operator/=(float a) {
+    for (int32_t i = 0; i < kSpectrumSamples; ++i)
+        values[i] /= a;
+    return *this;
+  }
+
+  SampledSpectrum SampledSpectrum::operator*(const SampledSpectrum &s) const {
+    SampledSpectrum ret = *this;
+    return ret *= s;
+  }
+
+  SampledSpectrum& SampledSpectrum::operator*=(const SampledSpectrum &s) {
+    for (int i = 0; i < kSpectrumSamples; ++i) {
+      values[i] *= s.values[i];
+    }
+    return *this;
+  }
+
   SampledSpectrum& SampledSpectrum::operator+=(const SampledSpectrum& s) {
     for (int32_t i = 0; i < kSpectrumSamples; ++i) {
       values[i] += s[i];
     }
     return *this;
+  }
+      
+  XYZ SampledSpectrum::ToXYZ(const SampledWavelengths& lambda) {
+    SampledSpectrum X = spectra::X()->SampleWavelengths(lambda); 
+    SampledSpectrum Y = spectra::Y()->SampleWavelengths(lambda); 
+    SampledSpectrum Z = spectra::Z()->SampleWavelengths(lambda); 
+
+    SampledSpectrum pdf = lambda.PDF();
+
+    return XYZ(
+      SaveDiv(X * *this , pdf).Average() ,
+      SaveDiv(Y * *this , pdf).Average() ,
+      SaveDiv(Z * *this , pdf).Average()
+    ) / kCIEYIntegral;
   }
       
   SampledSpectrum SampledSpectrum::SaveDiv(const SampledSpectrum& a , const SampledSpectrum& b) {
