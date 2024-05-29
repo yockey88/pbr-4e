@@ -3,9 +3,16 @@
  **/
 #include "pbr.hpp"
 
+#include <iostream>
+
 #include <Windows.h>
 
+#include "base/ref.hpp"
+#include "radiometry/spectrum.hpp"
+
 int pbr_renderer(int argc , char* argv[]) {
+#if 1
+#else 
   auto args = pbr::GetCommandLineArgs(argc , argv);
   
   pbr::Options opts;
@@ -21,7 +28,7 @@ int pbr_renderer(int argc , char* argv[]) {
   // render the scene
   // clean up after rendering
   pbr::CleanupPBR();
-
+#endif
   return 0;
 }
 

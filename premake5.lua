@@ -16,6 +16,7 @@ configuration.platforms = { "Windows" }
 configuration.groups = {
   ["renderer"] = { "./renderer" } ,
   ["runtime"] = { "./runtime" } ,
+  ["testing"] = { "./tests" } ,
 }
 
 local glad = {}

@@ -118,6 +118,16 @@ namespace pbr {
     p_min = Point3{ max_num , max_num , max_num };
     p_max = Point3{ min_num , min_num , min_num };
   }
+
+  Point3 Bounds3::operator[](int32_t p) const {
+    return (p == 0) ?
+      p_min : p_max;
+  }
+  
+  Point3& Bounds3::operator[](int32_t p) {
+    return (p == 0) ?
+      p_min : p_max;
+  }
       
   bool Bounds3::Overlaps(const Bounds3& other) const {
     bool x = (p_max.x >= other.p_min.x) && (p_min.x <= other.p_min.x);
@@ -207,6 +217,10 @@ namespace pbr {
       
   glm::vec3 Bounds3::Diagonal() const {
     return p_max - p_min;
+  }
+      
+  glm::vec3 Bounds3::Corner(uint32_t c) const {
+    return Point3((*this)[(c & 1)].x , (*this)[(c & 2) ? 1 : 0].y , (*this)[(c & 4) ? 1 : 0].z);
   }
       
   void Bounds3::BoundSphere(Point3& center , float& radius) const {

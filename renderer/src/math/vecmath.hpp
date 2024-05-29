@@ -126,6 +126,14 @@ namespace pbr {
       -n : n;
   }
 
+  inline glm::vec2 FaceForward(const glm::vec2& n , const glm::vec2& v) {
+    return FaceForward<2 , float>(n , v);
+  }
+
+  inline glm::vec3 FaceForward(const glm::vec3& n , const glm::vec3& v) {
+    return FaceForward<3 , float>(n , v);
+  }
+
   template <typename T , glm::qualifier Q>
   inline glm::vec<2 , T , Q> Min(const glm::vec<2 , T , Q>& v1 , const glm::vec<2 , T , Q>& v2) {
     return {

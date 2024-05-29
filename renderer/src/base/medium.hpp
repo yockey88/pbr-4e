@@ -4,10 +4,16 @@
 #ifndef PBR_MEDIUM_HPP
 #define PBR_MEDIUM_HPP
 
+#include "base/ref.hpp"
+
 namespace pbr {
 
-  class Medium /* : public TaggedPointer<...> */ {
+  class Medium : public RefCounted {
     public:
+      Medium() {}
+
+      virtual ~Medium() override {}
+
     private:
   };
 

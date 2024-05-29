@@ -1,7 +1,7 @@
 /**
- * \file ray.cpp
+ * \file math/ray.cpp
  **/
-#include "ray.hpp"
+#include "math/ray.hpp"
 
 namespace pbr {
 
@@ -11,6 +11,14 @@ namespace pbr {
 
   const glm::vec3& Ray::Direction() const {
     return direction;
+  }
+
+  float Ray::Time() const {
+    return time;
+  }
+
+  Ref<Medium> Ray::GetMedium() const {
+    return medium;
   }
 
   Point3 Ray::At(float t) const {

@@ -67,6 +67,9 @@ namespace pbr {
       Bounds3(const Point3& p1 , const Point3& p2)
         : p_min(Min(p1 , p2)) , p_max(Max(p1 , p2)) {}
 
+      Point3 operator[](int32_t p) const;
+      Point3& operator[](int32_t p);
+
       bool Overlaps(const Bounds3& other) const;
       bool Inside(const Point3& p) const;
       bool InsideExclusive(const Point3& p) const;
@@ -86,6 +89,8 @@ namespace pbr {
       glm::vec3 Offset(const Point3& p) const;
 
       glm::vec3 Diagonal() const;
+
+      glm::vec3 Corner(uint32_t c) const;
 
       void BoundSphere(Point3& center , float& radius) const;
 
