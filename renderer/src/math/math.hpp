@@ -6,6 +6,7 @@
 
 #include <span>
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 
 #include "util/float.hpp"
@@ -41,6 +42,28 @@ namespace pbr {
     }
 
     return static_cast<size_t>(Clamp(static_cast<ssize_t>(first) - 1 , 0 , sz - 2));
+  }
+
+  template <typename TResult , size_t N , typename T>
+  inline TResult Mul(const glm::mat<N , N , float , glm::defaultp>& m , const T& v) {
+    TResult result;
+    for (int32_t i = 0; i < N; ++i) {
+      result[0] = 0;
+      for (int32_t j = 0; j < N; ++j) {
+        result[i] += m[i][j] * v[j];
+      }
+    }
+    return result;
+  }
+
+  template <typename TResult , typename T>
+  inline TResult Mul(const glm::mat3& m , const T& v) {
+    return Mul<TResult>(m , v);
+  }
+  
+  template <typename TResult , typename T>
+  inline TResult Mul(const glm::mat4& m , const T& v) {
+    return Mul<TResult>(m , v);
   }
 
   inline float SafeAsin(float x) {

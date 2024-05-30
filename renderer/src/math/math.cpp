@@ -2,6 +2,7 @@
  * \file math/math.cpp
  **/
 #include "math/math.hpp"
+#include "math/vecmath.hpp"
 #include "util/float.hpp"
 
 namespace pbr {
@@ -29,7 +30,7 @@ namespace pbr {
   float Lerp(float x , float a , float b) {
     return (1 - x) * a + x * b; 
   }
-  
+   
   float Bilerp(const glm::vec2& p , const std::span<const float>& w) {
     float blf_0 = ((1 - p.x) * (1 - p.y) * w[0]);
     float blf_1 = p.x * (1 - p.y) * w[1];

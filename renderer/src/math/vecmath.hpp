@@ -7,6 +7,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/detail/qualifier.hpp>
 
 #include "math/math.hpp"
@@ -102,6 +103,14 @@ namespace pbr {
     return AngleBetween<3 , float>(v1 , v2);
   }
 
+  inline float AngleBetween(const glm::quat& q1 , const glm::quat& q2) {
+    if (glm::dot(q1 , q2) < 0) {
+      return pi - 2 * SafeAsin(static_cast<float>((q1 + q2).length()) / 2);
+    } else {
+      return 2 * SafeAsin(static_cast<float>((q2 - q1).length()) / 2);
+    }
+  }
+
   template <size_t N , typename T>
   inline auto Distance(const Point<N , T>& p1 , const Point<N , T>& p2) {
     return (p1 - p2).length();
@@ -119,6 +128,14 @@ namespace pbr {
   inline float DistanceSquared(const Point3& p1 , const Point3& p2) {
     return LengthSquared(p1 - p2);
   }
+  
+  inline auto Abs(const glm::vec3& v) {
+    return glm::vec3{
+      glm::abs(v.x) ,
+      glm::abs(v.y) ,
+      glm::abs(v.z)
+    };
+  }
 
   template <size_t N , typename T>
   inline glm::vec<N , T , glm::defaultp> FaceForward(const glm::vec<N , T , glm::defaultp>& n , const glm::vec<N , T , glm::defaultp>& v) {
@@ -133,6 +150,14 @@ namespace pbr {
   inline glm::vec3 FaceForward(const glm::vec3& n , const glm::vec3& v) {
     return FaceForward<3 , float>(n , v);
   }
+  
+  // inline glm::vec3 Error(const glm::vec3& v) {
+  //   return glm::vec3{
+  //     Width(v.x) / 2 ,
+  //     Width(v.y) / 2 ,
+  //     Width(v.z) / 2
+  //   };
+  // }
 
   template <typename T , glm::qualifier Q>
   inline glm::vec<2 , T , Q> Min(const glm::vec<2 , T , Q>& v1 , const glm::vec<2 , T , Q>& v2) {
@@ -234,6 +259,13 @@ namespace pbr {
       (p + 2 * pi) : p;
   }
 
+  inline float SinXOverX(float x) {
+    if (1.f - x * x == 1.f) {
+      return 1.f;
+    }
+    return glm::sin(x) / x;
+  }
+
   float SphericalTriangleArea(const glm::vec3& a , const glm::vec3& b , const glm::vec3& c);
 
   float SphericalQuadArea(const glm::vec3& a , const glm::vec3& b , const glm::vec3& c , const glm::vec3& d);
@@ -241,6 +273,8 @@ namespace pbr {
   glm::vec3 SphericalDirection(float sin_theta , float cos_theta , float phi);
 
   glm::vec3 EqualAreaSquareToSphere(const Point2& p);
+  
+  glm::quat Slerp(float t , const glm::quat& q1 , const glm::quat& q2);
 
 } // namespace pbr
 

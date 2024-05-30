@@ -5,6 +5,22 @@
 
 namespace pbr {
 
+  void Ray::SetOrigin(const Point3& o) {
+    origin = o;
+  }
+
+  void Ray::SetDirection(const glm::vec3& dir) {
+    direction = dir;
+  }
+  
+  void Ray::SetTime(float time) {
+    this->time = time;
+  }
+
+  void Ray::SetMedium(const Ref<Medium>& medium) {
+    this->medium = medium;
+  }
+
   const Point3& Ray::Origin() const {
     return origin;
   }
@@ -29,6 +45,26 @@ namespace pbr {
     return At(t);
   }
 
+  void RayDifferential::SetRxOrigin(const Point3& o) {
+    rx_origin = o;
+  }
+
+  void RayDifferential::SetRyOrigin(const Point3& o) {
+    ry_origin = o;
+  }
+
+  void RayDifferential::SetRxDirection(const glm::vec3& dir) {
+    rx_dir = dir;
+  }
+
+  void RayDifferential::SetRyDirection(const glm::vec3& dir) {
+    ry_dir = dir;
+  }
+      
+  void RayDifferential::SetHasDifferentials(bool has) {
+    has_differentials = has;
+  }
+  
   const bool RayDifferential::HasDifferentials() const {
     return has_differentials;
   }

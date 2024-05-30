@@ -206,7 +206,7 @@ namespace pbr {
     return *this;
   }
       
-  XYZ SampledSpectrum::ToXYZ(const SampledWavelengths& lambda) {
+  XYZ SampledSpectrum::ToXYZ(const SampledWavelengths& lambda) const {
     SampledSpectrum X = spectra::X()->SampleWavelengths(lambda); 
     SampledSpectrum Y = spectra::Y()->SampleWavelengths(lambda); 
     SampledSpectrum Z = spectra::Z()->SampleWavelengths(lambda); 
@@ -218,6 +218,11 @@ namespace pbr {
       SaveDiv(Y * *this , pdf).Average() ,
       SaveDiv(Z * *this , pdf).Average()
     ) / kCIEYIntegral;
+  }
+  
+  RGB SampledSpectrum::ToRGB(const SampledWavelengths& wavelengths , const RGBColorSpace& cs) const {
+    XYZ xyz = ToXYZ(wavelengths);
+    return cs.ToRGB(xyz);
   }
       
   SampledSpectrum SampledSpectrum::SaveDiv(const SampledSpectrum& a , const SampledSpectrum& b) {

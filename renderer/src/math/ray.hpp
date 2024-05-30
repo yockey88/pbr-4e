@@ -18,6 +18,11 @@ namespace pbr {
 
       virtual ~Ray() {}
 
+      void SetOrigin(const Point3& o);
+      void SetDirection(const glm::vec3& dir);
+      void SetTime(float time);
+      void SetMedium(const Ref<Medium>& medium);
+
       const Point3& Origin() const;
       const glm::vec3& Direction() const;
       float Time() const;
@@ -43,6 +48,14 @@ namespace pbr {
       explicit RayDifferential(const Ray& r) : Ray(r) {}
 
       virtual ~RayDifferential() override {}
+
+      void SetRxOrigin(const Point3& o);
+      void SetRyOrigin(const Point3& o);
+
+      void SetRxDirection(const glm::vec3& dir);
+      void SetRyDirection(const glm::vec3& dir);
+
+      void SetHasDifferentials(bool has);
 
       const bool HasDifferentials() const;
 

@@ -78,4 +78,11 @@ namespace pbr {
     };
   }
   
+  glm::quat Slerp(float t , const glm::quat& q1 , const glm::quat& q2) {
+    float theta = AngleBetween(q1 , q2);
+    float sin_over_theta = SinXOverX(theta);
+    return q1 * (1 - t) * SinXOverX((1.f - t) * theta) / sin_over_theta +
+           q2 * t * SinXOverX(t * theta) / sin_over_theta;
+  }
+  
 } // namespace pbr

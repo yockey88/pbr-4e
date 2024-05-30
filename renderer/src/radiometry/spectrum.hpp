@@ -13,6 +13,8 @@
 namespace pbr {
 
   class XYZ;
+  class RGB;
+  class RGBColorSpace;
   
   class SampledSpectrum;
   class SampledWavelengths;
@@ -121,7 +123,8 @@ namespace pbr {
 
       SampledSpectrum& operator+=(const SampledSpectrum& s);
 
-      XYZ ToXYZ(const SampledWavelengths& lambda);
+      XYZ ToXYZ(const SampledWavelengths& lambda) const;
+      RGB ToRGB(const SampledWavelengths& wavelengths , const RGBColorSpace& cs) const;
 
       static SampledSpectrum SaveDiv(const SampledSpectrum& a , const SampledSpectrum& b);
 

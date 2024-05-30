@@ -2,12 +2,16 @@
  * \file math/transform.cpp
  **/
 #include "math/transform.hpp"
-#include "math/vecmath.hpp"
 
-#include <glm/ext/matrix_transform.hpp>
+#include <glm/matrix.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/matrix.hpp>
+#include <glm/gtx/matrix_interpolation.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/quaternion_common.hpp>
+
+#include "math/vecmath.hpp"
 
 namespace pbr {
 
@@ -29,6 +33,32 @@ namespace {
   Transform::Transform(const glm::mat4& m)
       : model(m) {
     inverse_model = glm::inverse(model);
+  }
+
+  Transform::Transform(const glm::quat& q) {
+    float xx = q.x * q.x;
+    float yy = q.y * q.y;
+    float zz = q.z * q.z;
+
+    float xy = q.x * q.y;
+    float xz = q.x * q.z;
+    float yz = q.y * q.z;
+
+    float wx = q.x * q.w;
+    float wy = q.y * q.w;
+    float wz = q.z * q.w;
+
+    inverse_model[0][0] = 1 - 2 * (yy + zz);
+    inverse_model[0][1] = 2 * (xy + wz);
+    inverse_model[0][2] = 2 * (xz - wy);
+    inverse_model[1][0] = 2 * (xy - wz);
+    inverse_model[1][1] = 1 - 2 * (xx + zz);
+    inverse_model[1][2] = 2 * (yz + wz);
+    inverse_model[2][0] = 2 * (xz + wy);
+    inverse_model[2][1] = 2 * (yz - wx);
+    inverse_model[2][2] = 1 - 2 * (xx + yy);
+
+    model = glm::transpose(inverse_model);
   }
       
   Transform::Transform(const float mat[16]) {
@@ -52,11 +82,11 @@ namespace {
     inverse_model = glm::inverse(model);
   }
 
-  bool Transform::operator==(const Transform& t) {
+  bool Transform::operator==(const Transform& t) const {
     return model == model;
   }
 
-  bool Transform::operator!=(const Transform& t) {
+  bool Transform::operator!=(const Transform& t) const {
     return model != model;
   }
 
@@ -112,9 +142,18 @@ namespace {
     }
   }
       
-  Ray Transform::TransformRay(const Ray& r , float& tmax) const {
+  Ray Transform::TransformRay(const Ray& r , float* tmax) const {
     Point3 o = TransformPoint(r.Origin());
     glm::vec3 d = TransformVector(r.Direction());
+    if (float length_sqrd = LengthSquared(d); length_sqrd > 0) {
+      /// figure out how to implement Error?
+      // float dt = glm::dot(Abs(d) , Error(o)) / length_sqrd;
+      // o += d * dt;
+      // if (tmax != nullptr) {
+      //   tmax -= dt;
+      // }
+    }
+
     return Ray(o , d , r.Time() , r.GetMedium());
   }
       
@@ -124,6 +163,23 @@ namespace {
       bt = Bounds3::Union(bt , TransformPoint(b.Corner(i)));
     }
     return bt;
+  }
+      
+  Point3 Transform::ApplyInverse(const Point3& p) const {
+    float x = p.x;
+    float y = p.y;
+    float z = p.z;
+
+    float xp = (inverse_model[0][0] * x + inverse_model[0][1] * y) + (inverse_model[0][2] * z + inverse_model[0][2]);
+    float yp = (inverse_model[1][0] * x + inverse_model[1][1] * y) + (inverse_model[1][2] * z + inverse_model[1][2]);
+    float zp = (inverse_model[2][0] * x + inverse_model[2][1] * y) + (inverse_model[2][2] * z + inverse_model[2][2]);
+    float wp = (inverse_model[3][0] * x + inverse_model[3][1] * y) + (inverse_model[3][2] * z + inverse_model[3][2]);
+
+    if (wp == 1.f) {
+      return Point3(xp , yp , zp);
+    } else {
+      return (Point3(xp , yp , zp) / wp);
+    }
   }
       
   Transform Transform::operator*(const Transform& t) const {
@@ -136,6 +192,39 @@ namespace {
 
   const glm::mat4& Transform::InverseMatrix() {
     return inverse_model;
+  }
+      
+  void Transform::Decompose(glm::vec3& T , glm::mat4& R , glm::mat4& S) const {
+    T.x = model[0][3];
+    T.x = model[1][3];
+    T.x = model[2][3];
+
+    glm::mat4 M = model;
+    for (int32_t i = 0; i < 3; ++i) {
+      M[i][3] = M[3][i] = 0.f;
+    }
+    M[3][3] = 1.f;
+
+    float norm;
+    int32_t count = 0;
+
+    R = M;
+
+    do {
+      glm::mat4 rit = glm::inverse(glm::transpose(R));
+      glm::mat4 r_next = (R + rit) / 2;
+
+      norm = 0.f;
+      for (int32_t i = 0; i < 3; ++i) {
+        float n = glm::abs(R[i][0] - r_next[i][0]) +
+                  glm::abs(R[i][1] - r_next[i][1]) +
+                  glm::abs(R[i][2] - r_next[i][2]);
+        norm = glm::max(norm , n);
+      }
+      R = r_next;
+    } while (++count < 100 && norm > .0001);
+
+    S = glm::inverse(R) * M;
   }
       
   Transform Transform::Translate(const glm::vec3& v) {
@@ -284,6 +373,103 @@ namespace {
       
   Transform Transform::Transpose(const Transform& t) {
     return Transform(glm::transpose(t.model));
+  }
+      
+  Transform Transform::Inverse(const Transform& t) {
+    return Transform(t.inverse_model);
+  }
+
+  AnimatedTransform::AnimatedTransform(const Transform& start , float start_t , 
+                                      const Transform& end   , float end_t) 
+      : start_transform(start) , end_transform(end) , start_time(start_t) , end_time(end_t) ,
+        actually_animated(start != end) {
+    if (!actually_animated) {
+      return;
+    }  
+
+    glm::mat4 Rm;
+    start_transform.Decompose(T[0] , Rm , S[0]);
+    // R[0] = glm::quat(Transform(Rm));
+   
+    end_transform.Decompose(T[1] , Rm , S[1]);
+    // R[1] = glm::quat(Transform(Rm));
+
+    if (glm::dot(R[0] , R[1]) < 0.f) {
+      R[1] = -R[1];
+    }
+
+    has_rotation = glm::dot(R[0] , R[1]) < 0.9995f;
+    if (has_rotation) {
+      /// absolute insanity ???? 
+      ///   computing coefficients of the derivatives of the motion polynomial 
+    }
+  }
+      
+  bool AnimatedTransform::HasScale() const {
+    return start_transform.HasScale() || end_transform.HasScale();
+  }
+      
+  Point3 AnimatedTransform::TransformVector(const glm::vec3& v , float time) const {
+    if (!actually_animated || time <= start_time) {
+      return start_transform.TransformVector(v);
+    } else if (time >= end_time) {
+      return end_transform.TransformVector(v);
+    }
+    Transform t = Interpolate(time);
+    return t.TransformVector(v);
+  }
+      
+  Point3 AnimatedTransform::TransformPoint(const Point3& p , float time) const {
+    if (!actually_animated || time <= start_time) {
+      return start_transform.TransformPoint(p);
+    } else if (time >= end_time) {
+      return end_transform.TransformPoint(p);
+    }
+    Transform t = Interpolate(time);
+    return t.TransformPoint(p);
+  }
+      
+  glm::vec3 AnimatedTransform::TransformNormal(const glm::vec3& n , float time) const {
+    if (!actually_animated || time <= start_time) {
+      return start_transform.TransformNormal(n);
+    } else if (time >= end_time) {
+      return end_transform.TransformNormal(n);
+    }
+    Transform t = Interpolate(time);
+    return t.TransformNormal(n);
+  }
+
+  Ray AnimatedTransform::TransformRay(const Ray& ray , float* tmax) const {
+    if (!actually_animated || ray.Time() <= start_time) {
+      return start_transform.TransformRay(ray , tmax);
+    } else if (ray.Time() >= end_time) {
+      return end_transform.TransformRay(ray , tmax);
+    }
+  }
+      
+  Point3 AnimatedTransform::ApplyInverse(const Point3& p , float time) const {
+    if (!actually_animated) {
+      return start_transform.ApplyInverse(p);
+    }
+    return Interpolate(time).ApplyInverse(p);
+  }
+  
+  Transform AnimatedTransform::Interpolate(float time) const {
+    if (actually_animated || time <= start_time) {
+      return start_transform;
+    } 
+
+    if (time >= end_time) {
+      return end_transform;
+    }
+
+    float dt = (time - start_time) / (end_time - start_time);
+    glm::vec3 trans = (1 - dt) * T[0] + dt * T[1];
+
+    glm::quat rotate = glm::slerp(R[0] , R[1] , dt);
+    glm::mat4 scale = (1.f - dt) * S[0] + dt * S[1];
+
+    return Transform::Translate(trans) * Transform(rotate) * Transform(scale);
   }
 
 } // namespace pbr

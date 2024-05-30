@@ -52,7 +52,6 @@ namespace pbr {
         return ret;
       }
 
-    private:
       Point2 p_min;
       Point2 p_max;
   };
@@ -107,7 +106,6 @@ namespace pbr {
         return ret;
       }
 
-    private:
       Point3 p_min;
       Point3 p_max;
   };
