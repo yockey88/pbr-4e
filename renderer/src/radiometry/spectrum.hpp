@@ -8,7 +8,7 @@
 #include <vector>
 #include <array>
 
-#include "base/ref.hpp"
+#include "util/ref.hpp"
 
 namespace pbr {
 
@@ -143,7 +143,8 @@ namespace pbr {
 
       bool SecondaryTerminated() const;
       
-      static SampledWavelengths SampledUniform(float u , float lmin = kLambdaMin , float lmax = kLambdaMax);
+      static SampledWavelengths SampleUniform(float u , float lmin = kLambdaMin , float lmax = kLambdaMax);
+      static SampledWavelengths SampleVisible(float u);
 
     private:
       std::array<float , kSpectrumSamples> lambda;

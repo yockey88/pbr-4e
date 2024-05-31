@@ -4,16 +4,27 @@
 #ifndef PBR_MATH_HPP
 #define PBR_MATH_HPP
 
+#include <glm/detail/qualifier.hpp>
 #include <span>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 
+#include "util/defines.hpp"
 #include "util/float.hpp"
 
 namespace pbr {
 
   constexpr static float pi = 3.14159265358979323846f;
+  constexpr static float pi_over_2 = pi / 2;
+  constexpr static float pi_over_4 = pi / 4;
+  
+  template <size_t N , typename T>
+  using Point = glm::vec<N , T , glm::defaultp>;
+
+  using Point2 = Point<2 , float>;
+  using Point3 = Point<3 , float>;
+  using Point4 = Point<4 , float>;
 
   template <typename T , typename U , typename V>
   constexpr T Clamp(T val , U low , V high) {
@@ -88,11 +99,39 @@ namespace pbr {
     return FMA(t , EvaluatePolynomial(t , args...) , c);
   }
 
+  template <size_t N>
+  inline Opt<glm::mat<N , N , float , glm::defaultp>> LinearLeastSquares(const float a[][N] , const float b[][N] , int32_t rows) {
+    glm::mat<N , N , float , glm::defaultp> AtA = glm::mat<N , N , float , glm::defaultp>(0.f);
+    glm::mat<N , N , float , glm::defaultp> AtB = glm::mat<N , N , float , glm::defaultp>(0.f);
+
+    for (int32_t i = 0; i < N; ++i) {
+      for (int32_t j = 0; j < N; ++j) {
+        for (int32_t r = 0; r < rows; ++r) {
+          AtA[i][j] = a[r][i] * a[r][j];
+          AtB[i][j] = a[r][i] * b[r][j];
+        }
+      }
+    }
+
+    auto AtAi = glm::inverse(AtA);
+    return glm::transpose(AtAi * AtB);
+  }
+
+  inline Opt<glm::mat3> LinearLeastSquares(const float a[][3] , const float b[][3] , int32_t rows) {
+    return LinearLeastSquares<3>(a , b , rows);
+  }
+
+  inline Opt<glm::mat4> LinearLeastSquares(const float a[][4] , const float b[][4], int32_t rows) {
+    return LinearLeastSquares<4>(a , b , rows);
+  }
+
   float FastExp(float x);
 
   float Lerp(float x , float a , float b);
   
   float Bilerp(const glm::vec2& p , const std::span<const float>& w);
+
+  Point2 WrapEqualAreaSquare(const Point2& uv);
 
 } // namespace pbr
 

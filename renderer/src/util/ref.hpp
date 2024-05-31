@@ -1,5 +1,5 @@
 /**
- * \file base/ref.hpp
+ * \file util/ref.hpp
  **/
 #ifndef PBR_REF_HPP
 #define PBR_REF_HPP

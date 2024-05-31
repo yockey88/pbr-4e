@@ -49,7 +49,9 @@ namespace pbr {
       void Decompose(glm::vec3& T , glm::mat4& R , glm::mat4& S) const;
 
       static Transform Translate(const glm::vec3& v);
+      static Transform Translate(float x , float y , float z);
       static Transform Scale(const glm::vec3& v);
+      static Transform Scale(float x , float y , float z);
       static Transform RotateX(float angle);
       static Transform RotateY(float angle);
       static Transform RotateZ(float angle);

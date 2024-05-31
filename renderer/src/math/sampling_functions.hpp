@@ -1,5 +1,5 @@
 /**
- * \file sampling_functions.hpp
+ * \file math/sampling_functions.hpp
  **/
 #ifndef PBR_SAMPLING_FUNCTIONS_HPP
 #define PBR_SAMPLING_FUNCTIONS_HPP
@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <span>
 
-#include <glm/glm.hpp>
+#include "math/vecmath.hpp"
 
 namespace pbr {
  
@@ -30,6 +30,12 @@ namespace pbr {
   glm::vec2 SampleBilinear(const glm::vec2& u , const std::span<const float>& w);
 
   glm::vec2 InvertBilinearSample(const glm::vec2& p , const std::span<const float>& w);
+
+  Point2 SampleUniformDiskConcentric(const Point2& u);
+
+  float SampleVisibleWavelengths(float u);
+
+  float VisibleWavelengthPDF(float lambda);
 
 } // namespace pbr
 

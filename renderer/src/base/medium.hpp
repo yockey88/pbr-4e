@@ -4,7 +4,7 @@
 #ifndef PBR_MEDIUM_HPP
 #define PBR_MEDIUM_HPP
 
-#include "base/ref.hpp"
+#include "util/ref.hpp"
 
 namespace pbr {
 

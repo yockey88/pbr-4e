@@ -42,10 +42,10 @@ namespace pbr {
   class RayDifferential : public Ray {
     public:
       RayDifferential() : Ray() {} 
+      RayDifferential(const Ray& r) : Ray(r) {}
       RayDifferential(const Point3& origin , const glm::vec3& direction , float time , Ref<Medium> medium = nullptr)
         : Ray(origin , direction , time , medium) {}
 
-      explicit RayDifferential(const Ray& r) : Ray(r) {}
 
       virtual ~RayDifferential() override {}
 

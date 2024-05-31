@@ -63,6 +63,34 @@ namespace spectra {
     return integral;
   }
 
+  constexpr static glm::mat3 lms_from_xyz {
+     0.8951f ,  0.2664f , -0.1614f ,
+    -0.7502f ,  1.7135f ,  0.0367f ,
+     0.0389f , -0.0685f ,  1.0296f 
+  };
+
+  constexpr static glm::mat3 xyz_from_lms {
+     0.986993f   , -0.147054f  , 0.159963f ,
+     0.432305f   ,  0.51836f   , 0.0492912f ,
+    -0.00852866f ,  0.0400428f , 0.968487f
+  };
+
+  glm::mat3 WhiteBalance(const Point2& src_w , const Point2& target_w) {
+    /// find lms coefficients for source and target white
+    XYZ src_xyz = XYZ::FromXY_Y(src_w);
+    XYZ dst_xyz = XYZ::FromXY_Y(target_w);
+
+    auto src_lms = Mul<XYZ>(lms_from_xyz , src_xyz);
+    auto dst_lms = Mul<XYZ>(lms_from_xyz , dst_xyz);
+
+    glm::mat3 lms_correct = glm::mat3 {
+      dst_lms[0] / src_lms[0] ,                       0 , 0                       ,
+      0                       , dst_lms[1] / src_lms[1] , 0                       ,
+      0                       , 0                       , dst_lms[2] / src_lms[2]
+    };
+    return xyz_from_lms * lms_correct * lms_from_xyz;
+  }
+
   XYZ XYZ::operator/(float a) const {
     XYZ ret = *this;
     return ret /= a;
@@ -93,6 +121,17 @@ namespace spectra {
     } else {
       return z;
     }
+  }
+
+  XYZ XYZ::operator*(float a) const {
+    return { a * x, a * y, a * z };
+  }
+
+  XYZ& XYZ::operator*=(float a) {
+    x *= a;
+    y *= a;
+    z *= a;
+    return *this;
   }
   
   Point2 XYZ::xy() const {
@@ -151,6 +190,18 @@ namespace spectra {
     r /= s;
     g /= s;
     b /= s;
+    return *this;
+  }
+
+  RGB RGB::operator*(float s) const {
+    RGB ret = *this;
+    return ret *= s;
+  }
+
+  RGB& RGB::operator*=(float s) {
+    r *= s;
+    g *= s;
+    b *= s;
     return *this;
   }
       

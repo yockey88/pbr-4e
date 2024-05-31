@@ -14,13 +14,6 @@
 
 namespace pbr {
 
-  template <size_t N , typename T>
-  using Point = glm::vec<N , T , glm::defaultp>;
-
-  using Point2 = Point<2 , float>;
-  using Point3 = Point<3 , float>;
-  using Point4 = Point<4 , float>;
-
   template <typename T>
   inline typename std::enable_if_t<std::is_integral_v<T> , T> FMA(T a , T b , T c) {
     return a * b + c;

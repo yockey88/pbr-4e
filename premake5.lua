@@ -30,6 +30,13 @@ local glm = {}
 glm.name = "glm"
 glm.include_dir = "%{wks.location}/external/glm"
 
+local gtest = {}
+gtest.name = "gtest"
+gtest.path = "./external/gtest"
+gtest.include_dir = "%{wks.location}/external/gtest/googletest/include/gtest"
+gtest.lib_name = "gtest"
+gtest.lib_dir = "%{wks.location}/bin/Debug/gtest"
+
 local imgui = {}
 imgui.name = "imgui"
 imgui.path = "./external/imgui"
@@ -58,6 +65,7 @@ stb.include_dir = "%{wks.location}/external/stb"
 
 AddDependency(glad)
 AddDependency(glm)
+AddDependency(gtest)
 AddDependency(imgui)
 AddDependency(sdl2)
 AddDependency(spdlog)

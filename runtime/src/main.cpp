@@ -7,7 +7,7 @@
 
 #include <Windows.h>
 
-#include "base/ref.hpp"
+#include "util/ref.hpp"
 #include "radiometry/spectrum.hpp"
 
 int pbr_renderer(int argc , char* argv[]) {

@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "math/math.hpp"
+#include "math/sampling_functions.hpp"
 #include "radiometry/color.hpp"
 
 namespace pbr {
@@ -268,7 +269,7 @@ namespace pbr {
     return true;
   }
 
-  SampledWavelengths SampledWavelengths::SampledUniform(float u , float lmin , float lmax) {
+  SampledWavelengths SampledWavelengths::SampleUniform(float u , float lmin , float lmax) {
     SampledWavelengths swl;
     swl.lambda[0] = Lerp(u , lmin , lmax);
     
@@ -285,6 +286,21 @@ namespace pbr {
       swl.pdf[i] = 1 / (lmax - lmin);
     }
 
+    return swl;
+  }
+
+  SampledWavelengths SampledWavelengths::SampleVisible(float u) {
+    SampledWavelengths swl;
+    for (int32_t i = 0; i < kSpectrumSamples; ++i) {
+      /// compute up for wavelength sample
+      float up = u + float(i) / kSpectrumSamples;
+      if (up > 1) {
+        up -= 1;
+      }
+
+      swl.lambda[i] = SampleVisibleWavelengths(up);
+      swl.pdf[i] = VisibleWavelengthPDF(swl.lambda[i]);
+    }
     return swl;
   }
 

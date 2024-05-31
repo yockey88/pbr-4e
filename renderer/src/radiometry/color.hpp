@@ -26,8 +26,12 @@ namespace spectra {
 
   float InnerProduct(const Ref<Spectrum>& f , const Ref<Spectrum>& g);
 
+  glm::mat3 WhiteBalance(const Point2& src_w , const Point2& target_w);
+
   class XYZ {
     public:
+      XYZ()
+        : x(0.f) , y(0.f) , z(0.f) {}
       XYZ(float x , float y , float z)
         : x(x) , y(y) , z(z) {}
 
@@ -36,6 +40,10 @@ namespace spectra {
 
       float operator[](int32_t c) const;
       float& operator[](int32_t c);
+
+      XYZ operator*(float a) const;
+      XYZ &operator*=(float a);
+
 
       Point2 xy() const;
 
@@ -60,6 +68,11 @@ namespace spectra {
 
       RGB operator/(float s) const;
       RGB& operator/=(float s);
+      
+      RGB operator*(float s) const;
+      RGB& operator*=(float s);
+
+      friend RGB operator*(float a , RGB s) { return s * a; }
 
       float r , g , b;
   };
@@ -84,7 +97,7 @@ namespace spectra {
   class RGBSigmoidPolynomial;
   class RGBToSpectrumTable;
 
-  class RGBColorSpace {
+  class RGBColorSpace : public RefCounted {
     public:
       RGBColorSpace(const Point2& r , const Point2& g , const Point2& b , const Ref<Spectrum>& illuminant , 
                     const RGBToSpectrumTable* rgb_table);
@@ -113,8 +126,9 @@ namespace spectra {
       static const RGBColorSpace* rec_2020;
       static const RGBColorSpace* aces2056_1;
 
-    private:
       glm::mat3 xyz_from_rgb , rgb_from_xyz;
+
+    private:
       RGBToSpectrumTable* rgb_to_spectrum = nullptr;
   };
 

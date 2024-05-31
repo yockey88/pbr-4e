@@ -237,6 +237,10 @@ namespace {
       }
     );
   }
+      
+  Transform Transform::Translate(float x , float y , float z) {
+    return Translate({ x , y , z });
+  }
 
   Transform Transform::Scale(const glm::vec3& v) {
     return Transform(
@@ -247,6 +251,10 @@ namespace {
         0   , 0   , 0   , 1
       }
     );
+  }
+  
+  Transform Transform::Scale(float x , float y , float z) {
+    return Scale({ x , y , z });
   }
 
   Transform Transform::RotateX(float angle) {

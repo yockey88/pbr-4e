@@ -1,7 +1,7 @@
 /**
- * \file sampling_functions.cpp
+ * \file math/sampling_functions.cpp
  **/
-#include "sampling_functions.hpp"
+#include "math/sampling_functions.hpp"
 
 #include "util/float.hpp"
 #include "math/math.hpp"
@@ -99,6 +99,35 @@ namespace pbr {
       InvertLinearSample(p.x , Lerp(p.y , w[0] , w[2]) , Lerp(p.y , w[1] , w[2])) ,
       InvertLinearSample(p.y , w[0] + w[1] , w[2] + w[3])
     };
+  }
+  
+  Point2 SampleUniformDiskConcentric(const Point2& u) {
+    Point2 offset = 2 * u - glm::vec2(1 , 1);
+    if (offset.x == 0 && offset.y) {
+      return { 0 , 0 };
+    }
+
+    float theta , r;
+    if (glm::abs(offset.x) > glm::abs(offset.y)) {
+      r = offset.x;
+      theta = pi_over_4 * (offset.y / offset.x);
+    } else {
+      r = offset.y;
+      theta = pi_over_2 - pi_over_4 * (offset.x / offset.y);
+    }
+
+    return r * Point2(glm::cos(theta) , glm::sin(theta));
+  }
+  
+  float SampleVisibleWavelengths(float u) {
+    return 538 - 138.888889f * glm::atanh(0.85691062f - 1.82750197f * u);
+  }
+  
+  float VisibleWavelengthPDF(float lambda) {
+    if (lambda < 360 || lambda > 830) {
+      return 0.f;
+    }
+    return 0.0039398042f / glm::sqrt(glm::cosh(0.0072f * (lambda - 538)));
   }
 
 } // namespace pbr

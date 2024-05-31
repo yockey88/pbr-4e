@@ -38,5 +38,26 @@ namespace pbr {
     float blf_3 = p.y * p.y * w[3];
     return blf_0 + blf_1 + blf_2 + blf_3;
   }
+  
+  Point2 WrapEqualAreaSquare(const Point2& uv) {
+    Point2 ret = uv;
+    if (ret[0] < 0) {
+      ret[0] = -ret[0];
+      ret[1] = 1 - ret[1];
+    } else if (ret[0] > 1) {
+      ret[0] = 2 - ret[0];
+      ret[1] = 1 - ret[1];
+    }
+
+    if (ret[1] < 0) {
+      ret[0] = 1 - ret[0];
+      ret[1] = -ret[1];
+    } else {
+      ret[0] = 1 - ret[0];
+      ret[1] = 2 - ret[1];
+    } 
+
+    return ret;
+  }
 
 } // namespace pbr
