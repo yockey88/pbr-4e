@@ -350,5 +350,137 @@ namespace pbr {
 
     return CameraRay{ RenderFromCamera(ray) };
   }
+      
+  Opt<CameraRay> RealisticCamera::GenerateRay(const CameraSample& sample , SampledWavelengths& lambda) const {
+    Point2 s(
+      sample.film.x / film->FullResolution().x ,
+      sample.film.y / film->FullResolution().y
+    );
+
+    Point2 film2 = physical_extent.Lerp(s);
+    Point3 film(-film2.x , film2.y , 0);
+
+    Opt<ExitPupilSample> eps = SampleExitPupil(Point2(film.x , film.y) , sample.lens);
+    if (!eps.has_value()) {
+       return {};
+    }
+    
+    Ray rfilm(film , eps->pupil - film);
+    Ray ray;
+    float weight = TraceLensesFromFilm(rfilm , ray);
+
+    if (weight == 0.f) {
+       return {};
+    }
+
+    ray.SetTime(SampleTime(sample.time));
+    ray.SetMedium(medium);
+    ray = RenderFromCamera(ray);
+    ray.SetDirection(Normalize(ray.Direction()));
+
+    float cos_theta = Normalize(rfilm.Direction()).z;
+    weight *= glm::pow(cos_theta , 4) / (eps->pdf * glm::sqrt(LensRearZ()));
+    
+    return CameraRay{ ray , SampledSpectrum(weight) };
+
+    return std::nullopt;
+  }
+      
+  float RealisticCamera::LensRearZ() const {
+    return element_interfaces.back().thickness;
+  }
+      
+  float RealisticCamera::TraceLensesFromFilm(const Ray& ray_cam , Ray& ray_out) const {
+    float eltz  = 0.f , weight = 1.f;
+
+    Ray rlens(
+      Point3(ray_cam.Origin().x , ray_cam.Origin().y , -ray_cam.Origin().z) ,
+      glm::vec3(ray_cam.Direction().x , ray_cam.Direction().y , -ray_cam.Direction().z) ,
+      ray_cam.Time()
+    );
+
+    for (int32_t i = element_interfaces.size() - 1; i >= 0; --i) {
+      const LensElement& element = element_interfaces[i];
+
+      eltz -= element.thickness;
+      float t;
+      glm::vec3 n;
+      bool stop = (element.curvature_radius == 0);
+      if (stop) {
+        t = (eltz - rlens.Origin().z) / rlens.Direction().z;
+        if (t < 0.f) {
+          return 0.f;
+        }
+      } else {
+        float radius = element.curvature_radius;
+        float zcenter = eltz + element.curvature_radius;
+        // if (!IntersectSphericalElement(radius , zcenter , rlens , r , n)) {
+        //    return 0.f;
+        // }
+      }
+
+      Point3 phit = rlens.At(t);
+      if (stop && aperture_image) {
+        Point2 uv(
+          (phit.x / element.aperature_radius + 1) / 2 ,
+          (phit.y / element.aperature_radius + 1) / 2
+        );
+        // weight = aperture_image->BilerpChannel(uv , 0 , WrapMode::Black);
+        // if (weight == 0) {
+        //    return 0.f;
+        // }
+      } else {
+        if (glm::pow(phit.x , 2) + glm::pow(phit.y , 2) < glm::pow(element.aperature_radius , 2)) {
+          return 0.f;
+        }
+      }
+      rlens.SetOrigin(phit);
+
+      if (!stop) {
+        glm::vec3 w;
+        float eta_i = element.eta;
+        float eta_t = (i > 0 && element_interfaces[i - 1].eta != 0) ?
+          element_interfaces[i - 1].eta : 1;
+
+        // if (!Refract(-rlens.Direction() , n , eta_t / eta_i , nullptr , w)) {
+        //   return 0.f;
+        // }
+        rlens.SetDirection(w);
+      }
+    }
+
+    ray_out = Ray(
+      Point3(rlens.Origin().x , rlens.Origin().y , -rlens.Origin().z) ,
+      glm::vec3(rlens.Direction().x , rlens.Direction().y , -rlens.Direction().z) ,
+      rlens.Time()
+    );
+
+    return weight;
+  } 
+      
+  Opt<ExitPupilSample> RealisticCamera::SampleExitPupil(const Point2& f , const Point2& lens) const {
+    float rfilm = glm::sqrt(glm::pow(f.x , 2) + glm::pow(f.y , 2));
+    int32_t index = film / (film->Diagonal() / 2) * exit_pupil_bounds.size();
+    index = std::min<int32_t>(exit_pupil_bounds.size() - 1 , index);
+
+    Bounds2 pupil_bounds = exit_pupil_bounds[index];
+    if (pupil_bounds.IsDegenerate()) {
+      return {};
+    }
+
+    Point2 plens = pupil_bounds.Lerp(lens);
+    float pdf = 1 / pupil_bounds.Area();
+
+    float sin = (rfilm != 0) ? f.y / rfilm : 0;
+    float cos = (rfilm != 0) ? f.x / rfilm : 1;
+
+    Point3 pupil(
+      cos * plens.x - sin * plens.y ,
+      sin * plens.x + cos * plens.y , 
+      LensRearZ()
+    );
+
+    return ExitPupilSample{ pupil , pdf };
+  }
 
 } // namespace pbr

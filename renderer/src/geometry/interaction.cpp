@@ -1,7 +1,8 @@
 /**
- * \file math/interaction.cpp
+ * \file geometry/interaction.cpp
  **/
-#include "math/interaction.hpp"
+#include "geometry/interaction.hpp"
+
 #include "math/vecmath.hpp"
 
 namespace pbr {

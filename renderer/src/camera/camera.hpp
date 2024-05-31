@@ -132,8 +132,34 @@ namespace pbr {
       Mapping mapping;
   };
 
+  struct ExitPupilSample {
+    Point3 pupil;
+    float pdf;
+  };
+
   class RealisticCamera : public Camera {
     public:
+      RealisticCamera(const CameraParameters& parameters , const std::vector<float>& lens_params , float focus_dist , 
+                      float aperture_diameter , Ref<Image> aperture_image);
+
+      virtual Opt<CameraRay> GenerateRay(const CameraSample& sample , SampledWavelengths& lambda) const override; 
+
+    private:
+      struct LensElement {
+        float curvature_radius;
+        float thickness;
+        float eta;
+        float aperature_radius;
+      };
+
+      Bounds2 physical_extent;
+      std::vector<LensElement> element_interfaces;
+      Ref<Image> aperture_image;
+      std::vector<Bounds2> exit_pupil_bounds;
+
+      float LensRearZ() const;
+      float TraceLensesFromFilm(const Ray& ray_cam , Ray& ray_out) const;
+      Opt<ExitPupilSample> SampleExitPupil(const Point2& film , const Point2& lens) const;
   };
 
 } // namespace pbr

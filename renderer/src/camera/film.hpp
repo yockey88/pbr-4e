@@ -9,7 +9,7 @@
 #include "util/ref.hpp"
 #include "math/math.hpp"
 #include "math/bounds.hpp"
-#include "math/interaction.hpp"
+#include "geometry/interaction.hpp"
 #include "radiometry/spectrum.hpp"
 #include "camera/image.hpp"
 #include "camera/filter.hpp"

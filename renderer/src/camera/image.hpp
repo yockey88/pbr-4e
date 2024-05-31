@@ -31,7 +31,7 @@ namespace pbr {
       Opt<const RGBColorSpace*> color_space;
   };
 
-  class Image {
+  class Image : public RefCounted {
     public:
     private:
   };

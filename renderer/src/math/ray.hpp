@@ -5,7 +5,7 @@
 #define PBR_RAY_HPP
 
 #include "base/medium.hpp"
-#include "math/vecmath.hpp"
+#include "math/math.hpp"
 
 namespace pbr {
 
@@ -13,7 +13,7 @@ namespace pbr {
     public:
       Ray()
         : origin({ 0 , 0 , 0 }) , direction({ 0 , 0 , 0 }) , time(0) , medium(nullptr) {}
-      Ray(const Point3& origin , const glm::vec3& direction , float time , Ref<Medium> medium = nullptr)
+      Ray(const Point3& origin , const glm::vec3& direction , float time = 0.f , Ref<Medium> medium = nullptr)
         : origin(origin) , direction(direction) , time(time) , medium(medium) {}
 
       virtual ~Ray() {}

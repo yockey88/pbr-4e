@@ -1,5 +1,5 @@
 /**
- * \file math/interaction.hpp
+ * \file geometry/interaction.hpp
  **/
 #ifndef PBR_INTERACTION_HPP
 #define PBR_INTERACTION_HPP
