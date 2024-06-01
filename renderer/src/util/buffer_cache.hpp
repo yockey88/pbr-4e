@@ -8,12 +8,13 @@
 #include <shared_mutex>
 #include <span>
 #include <unordered_set>
+#include <cstdint>
 
 #include "math/math.hpp"
 
 namespace pbr {
 
-  inline uint64_t MurmurHash(const uint8_t* key , size_t len , uint64_t seed) {
+  inline constexpr uint64_t MurmurHash(const uint8_t* key , size_t len , uint64_t seed) {
     const uint64_t m = 0xc6a4a7935bd1e995ull;
     const int32_t r = 47;
 
@@ -54,8 +55,8 @@ namespace pbr {
   }
 
   template <typename T>
-  inline uint64_t HashBuffer(const T* ptr , size_t size , uint64_t seed = 0) {
-    return MurmurHash(static_cast<const uint8_t*>(ptr) , size , seed);
+  inline constexpr uint64_t HashBuffer(const T* ptr , size_t size , uint64_t seed = 0) {
+    return MurmurHash((const uint8_t*)ptr , size , seed);
   }
 
   template <typename T>

@@ -15,16 +15,32 @@
 namespace pbr {
 
   template <typename T>
-  inline typename std::enable_if_t<std::is_integral_v<T> , T> FMA(T a , T b , T c) {
+  inline T FMA(T a , T b , T c) {
     return a * b + c;
   }
 
+  inline glm::vec3 FMA(float a , const glm::vec3& b , const glm::vec3& c) {
+    return glm::vec3 {
+      FMA(a , b.x , c.x) ,
+      FMA(a , b.y , c.y) ,
+      FMA(a , b.z , c.z) 
+    };
+  }
+  
   template <typename Ta , typename Tb , typename Tc , typename Td>
   inline auto DifferenceOfProducts(Ta a , Tb b , Tc c , Td d) {
     auto cd = c * d;
     auto diff_of_products = FMA(a , b , -cd);
     auto error = FMA(-c , d , cd);
     return diff_of_products + error;
+  }
+
+  template <typename Ta , typename Tb , typename Tc , typename Td>
+  inline auto SumOfProducts(Ta a , Tb b , Tc c , Td d) {
+    auto cd = c * d;
+    auto sum_of_products = FMA(a , b , cd);
+    auto error = FMA(c , d , -cd);
+    return sum_of_products + error;
   }
 
   template <size_t N , typename T>
@@ -151,6 +167,14 @@ namespace pbr {
   inline glm::vec3 FaceForward(const glm::vec3& n , const glm::vec3& v) {
     return FaceForward<3 , float>(n , v);
   }
+
+  inline glm::vec3 Permute(const glm::vec3& v , const glm::vec3& p) {
+    return {
+      v[p[0]] , 
+      v[p[1]] ,
+      v[p[2]]
+    };
+  }
   
   // inline glm::vec3 Error(const glm::vec3& v) {
   //   return glm::vec3{
@@ -160,6 +184,20 @@ namespace pbr {
   //   };
   // }
 
+  inline float MaxComponentValue(const glm::vec3& v) {
+    return std::max<float>({ v.x , v.y , v.z });
+  }
+
+  inline int32_t MaxComponentIndex(const glm::vec3& n) {
+    if (n.x > n.y) {
+      return n.x > n.z ?
+        0 : 3;
+    } else {
+      return n.y > n.z ?
+        1 : 3;
+    }
+  }
+  
   template <typename T , glm::qualifier Q>
   inline glm::vec<2 , T , Q> Min(const glm::vec<2 , T , Q>& v1 , const glm::vec<2 , T , Q>& v2) {
     return {

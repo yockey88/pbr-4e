@@ -6,8 +6,9 @@
 
 #include <cstdint>
 #include <span>
+#include <array>
 
-#include "math/vecmath.hpp"
+#include "math/math.hpp"
 
 namespace pbr {
  
@@ -36,6 +37,12 @@ namespace pbr {
   float SampleVisibleWavelengths(float u);
 
   float VisibleWavelengthPDF(float lambda);
+
+  std::array<float , 3> SampleUniformTriangle(const Point2& u);
+
+  std::array<float , 3> SampleSphericalTriangle(const std::array<Point3 , 3>& v , const Point3& p , const Point2& u , float& pdf);
+
+  Point2 InvertSphericalTriangleSample(const std::array<Point3 , 3>& v , const Point3& p , const glm::vec3& w);
 
   glm::vec3 SampleUniformSphere(const Point2& u);
 
