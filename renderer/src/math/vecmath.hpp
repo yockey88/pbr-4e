@@ -109,6 +109,14 @@ namespace pbr {
     return (p1 - p2).length();
   }
 
+  inline auto Distance(const Point2& p1 , const Point2& p2) {
+    return Distance<2 , float>(p1 , p2);
+  }
+
+  inline auto Distance(const Point3& p1 , const Point3& p2) {
+    return Distance<3 , float>(p1 , p2);
+  }
+
   template <size_t N , typename T>
   inline auto DistanceSquared(const Point<N , T>& p1 , const Point<N , T>& p2) {
     return LengthSquared(p1 - p2);

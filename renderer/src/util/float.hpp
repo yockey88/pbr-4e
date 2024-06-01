@@ -21,7 +21,7 @@ constexpr static float kFloatOneMinusEpsilon = float(0x1.fffffep-1);
 #endif
  
 constexpr static float infinity = std::numeric_limits<float>::infinity();
-constexpr static float machine_epsilon = std::numeric_limits<float>::epsilon() * 0.5f;
+constexpr static float kMachineEpsilon = std::numeric_limits<float>::epsilon() * 0.5f;
 
 template <typename T>
 inline typename std::enable_if_t<std::is_floating_point_v<T>, bool> IsNaN(T v) {
@@ -137,6 +137,10 @@ inline float NextFloatDown(float v) {
   }
 
   return BitsToFloat(ui);
+}
+
+inline constexpr float Gamma(int32_t n) {
+  return (n * kMachineEpsilon) / (1 - n * kMachineEpsilon);
 }
 
 } // namespace pbr

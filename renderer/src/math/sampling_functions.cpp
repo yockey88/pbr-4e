@@ -129,5 +129,16 @@ namespace pbr {
     }
     return 0.0039398042f / glm::sqrt(glm::cosh(0.0072f * (lambda - 538)));
   }
+  
+  glm::vec3 SampleUniformSphere(const Point2& u) {
+    float z = 1 - 2 * u[0];
+    float r = glm::sqrt(1 - glm::pow(z , 2));
+    float phi = 2 * pi * u[1];
+    return glm::vec3{
+      r * glm::cos(phi) , 
+      r * glm::sin(phi) ,
+      z
+    };
+  }
 
 } // namespace pbr

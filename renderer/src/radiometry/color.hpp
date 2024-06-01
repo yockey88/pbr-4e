@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "math/vecmath.hpp"
+#include "math/math.hpp"
 #include "radiometry/spectrum.hpp"
 
 namespace pbr {

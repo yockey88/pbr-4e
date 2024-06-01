@@ -43,7 +43,7 @@ namespace pbr {
   Transform Orthographic(float near , float far);
   Transform Perspective(float fov , float n , float f);
 
-  class Camera : RefCounted {
+  class Camera : public RefCounted {
     public:
       Camera(const CameraParameters& p);
 

@@ -4,38 +4,33 @@
 #ifndef PBR_HPP
 #define PBR_HPP
 
-#include <memory_resource>
+#include "util/defines.hpp"
+#include "util/float.hpp"
+#include "util/ref.hpp"
+#include "util/buffer_cache.hpp"
+#include "math/math.hpp"
+#include "math/sampling_functions.hpp"
+#include "math/vecmath.hpp"
+#include "math/octahedral_vector.hpp"
+#include "math/bounds.hpp"
+#include "math/direction_cone.hpp"
+#include "math/frame.hpp"
+#include "math/transform.hpp"
+#include "math/ray.hpp"
+#include "geometry/interaction.hpp"
+#include "geometry/shape.hpp"
+#include "geometry/sphere.hpp"
+#include "geometry/cylinder.hpp"
+#include "geometry/disk.hpp"
+#include "radiometry/spectrum.hpp"
+#include "radiometry/color.hpp"
+#include "camera/camera_transform.hpp"
+#include "camera/image.hpp"
+#include "camera/film.hpp"
+#include "camera/camera.hpp"
 
-namespace pbr {
-
-using Alloc = std::pmr::polymorphic_allocator<std::byte>;
-
-enum class RenderingCoordinateSystem {
-  CAMERA ,
-  CAMERA_WORLD ,
-  WORLD ,
-};
-
-struct Options {
-  int32_t seed = 0;
-  bool quiet = false;
-  bool disable_pixel_jitter = false;
-  bool disable_wavelength_jitter = false;
-  bool disable_texture_filtering = false;
-  bool force_diffuse = false;
-  bool use_gpu = false;
-  bool wavefront = false;
-
-  RenderingCoordinateSystem rendering_space 
-    = RenderingCoordinateSystem::CAMERA_WORLD;
-
-};
-
-std::vector<std::string> GetCommandLineArgs(int argc , char* argv[]);
-
-void InitPBR(const Options& opts);
-void CleanupPBR();
-
-} // namespace pbr
+/// put this here because windows is like a fucking bomb when it comes to includes
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
 
 #endif // !PBR_HPP

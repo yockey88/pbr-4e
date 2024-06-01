@@ -37,6 +37,8 @@ namespace pbr {
 
   float VisibleWavelengthPDF(float lambda);
 
+  glm::vec3 SampleUniformSphere(const Point2& u);
+
 } // namespace pbr
 
 #endif // !PBR_SAMPLING_FUNCTIONS_HPP

@@ -75,6 +75,11 @@ namespace pbr {
       bool IsEmpty() const;
       bool IsDegenerate() const;
 
+      bool IntersectsPoint(const Point3& origin , const glm::vec3& dir , float tmax , 
+                           float* hit0 , float* hit1) const;
+      bool IntersectsPoint(const Point3& origin , const glm::vec3& dir , float tmax , 
+                           const glm::vec3& inv_dir , const int32_t dir_is_neg[3]) const;
+
       float Distance(const Point3& p) const;
       float DistanceSquared(const Point3& p) const;
 

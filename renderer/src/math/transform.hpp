@@ -4,10 +4,10 @@
 #ifndef PBR_TRANSFORM_HPP
 #define PBR_TRANSFORM_HPP
 
-#include "math/vecmath.hpp"
 #include "math/ray.hpp"
 #include "math/bounds.hpp"
 #include "math/frame.hpp"
+#include "geometry/interaction.hpp"
 
 namespace pbr {
 
@@ -37,6 +37,7 @@ namespace pbr {
       Point3 TransformPoint(const Point3& p) const;
       Ray TransformRay(const Ray& r , float* tmax = nullptr) const;
       Bounds3 TransformBounds(const Bounds3& b) const;
+      Ref<SurfaceInteraction> TransformSurfaceInteraction(const Ref<SurfaceInteraction>& s) const;
 
       Point3 ApplyInverse(const Point3& p) const;
 

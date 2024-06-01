@@ -5,6 +5,7 @@
 #define PBR_INTERACTION_HPP
 
 #include "base/medium.hpp"
+#include "util/ref.hpp"
 #include "math/vecmath.hpp"
 
 namespace pbr {
@@ -15,8 +16,13 @@ namespace pbr {
   class MediumInterface {};
   class PhaseFunction {};
 
-  class Interaction {
+  class Interaction : public RefCounted {
     public:
+      Interaction() {}
+      Interaction(const Point3& p , const glm::vec3& n , const Point2& uv)
+        : point(p) , normal(n) , uv(uv) {}
+      Interaction(const Point3& p , const glm::vec3& n , float time , const Point2& uv)
+        : point(p) , normal(n) , uv(uv) , time(time) {}
       Interaction(const Point3& p , const glm::vec3& n , const Point2& uv , const glm::vec3& wo , float time) 
         : point(p) , normal(n) , uv(uv) , wo(Normalize(wo)) , time(time) {}
       Interaction(const Point3& p , const glm::vec3& wo , float time , Ref<Medium> medium)
@@ -43,6 +49,7 @@ namespace pbr {
 
   class SurfaceInteraction : public Interaction {
     public:
+      SurfaceInteraction() {}
       SurfaceInteraction(const Point3& pi , const Point2& uv , const glm::vec3& wo , const glm::vec3& dpdu ,
                          const glm::vec3& dpdv , const glm::vec3& dndu , const glm::vec3& dndv , float time , 
                          bool flip_normal);
@@ -64,6 +71,7 @@ namespace pbr {
 
   class MediumInteraction : public Interaction {
     public:
+      MediumInteraction() {}
       MediumInteraction(const Point3& p , const glm::vec3& wo , float time , Ref<Medium> medium , PhaseFunction phase)
         : Interaction(p , wo , time , medium) , phase(phase) {}
 

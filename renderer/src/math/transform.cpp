@@ -12,6 +12,7 @@
 #include <glm/ext/quaternion_common.hpp>
 
 #include "math/vecmath.hpp"
+#include "geometry/interaction.hpp"
 
 namespace pbr {
 
@@ -163,6 +164,35 @@ namespace {
       bt = Bounds3::Union(bt , TransformPoint(b.Corner(i)));
     }
     return bt;
+  }
+
+  Ref<SurfaceInteraction> Transform::TransformSurfaceInteraction(const Ref<SurfaceInteraction>& interaction) const {
+    Ref<SurfaceInteraction> si = NewRef<SurfaceInteraction>();
+
+    si->point = TransformPoint(interaction->point);
+    si->normal = Normalize(TransformNormal(interaction->normal));
+    si->wo = Normalize(TransformVector(interaction->wo));
+
+    si->dpdu = TransformVector(interaction->dpdu);
+    si->dpdv = TransformVector(interaction->dpdv);
+    si->dndu = TransformNormal(interaction->dndu);
+    si->dndv = TransformNormal(interaction->dndv);
+
+    si->shading.normal = Normalize(TransformNormal(interaction->shading.normal));
+    si->shading.normal = FaceForward(si->shading.normal , si->normal);
+
+    si->shading.dpdu = TransformVector(interaction->shading.dpdu);
+    si->shading.dpdv = TransformVector(interaction->shading.dpdv);
+    si->shading.dndu = TransformNormal(interaction->shading.dndu);
+    si->shading.dndv = TransformNormal(interaction->shading.dndv);
+    
+    si->time = interaction->time;
+    si->medium_interface = interaction->medium_interface;
+    si->medium = interaction->medium;
+    si->uv = interaction->uv;
+    si->face_idx = interaction->face_idx;
+
+    return si;
   }
       
   Point3 Transform::ApplyInverse(const Point3& p) const {

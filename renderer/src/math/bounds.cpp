@@ -159,6 +159,83 @@ namespace pbr {
            p_min.y > p_max.y ||
            p_min.z > p_max.z;
   }
+  
+  bool Bounds3::IntersectsPoint(const Point3& origin , const glm::vec3& dir , float tmax , 
+                                float* hit0 , float* hit1) const {
+    float t0 = 0 , t1 = tmax;
+    for (int32_t i = 0; i < 3; ++i) {
+      /// update interval for ith bounding box slap
+      float inv_ray_dir = i / dir[i];
+      float near = (p_min[i] - origin[i]) * inv_ray_dir;
+      float far = (p_max[i] - origin[i]) * inv_ray_dir;
+
+      /// update parametric interval from slab intersection t values
+      if (near > far) {
+        std::swap(near , far);
+      }
+
+      t0 = near > t0 ?
+        near : t0;
+
+      t1 = far < t1 ? 
+        far : t1;
+
+      if (t0 > t1) {
+        return false;
+      }
+    }
+
+    if (hit0 != nullptr) {
+      *hit0 = t0;
+    }
+    
+    if (hit1 != nullptr) {
+      *hit1 = t1;
+    }
+
+    return true;
+  }
+      
+  bool Bounds3::IntersectsPoint(const Point3& origin , const glm::vec3& dir , float rtmax , 
+                                const glm::vec3& inv_dir , const int32_t dir_is_neg[3]) const {
+    const Bounds3& bounds = *this;
+    /// check for ray intersection x and y slabs
+    float tmin =  (bounds[    dir_is_neg[0]].x - origin.x) * inv_dir.x;
+    float tmax =  (bounds[1 - dir_is_neg[0]].x - origin.x) * inv_dir.x;
+    float tymin = (bounds[    dir_is_neg[1]].y - origin.y) * inv_dir.y;
+    float tymax = (bounds[1 - dir_is_neg[1]].y - origin.y) * inv_dir.y;
+
+    if (tmin > tymax || tymin > tmax) {
+      return false;
+    }
+
+    if (tymin > tmin) {
+      tmin = tymin;
+    }
+
+    if (tymax < tmax) {
+      tmax = tymax;
+    }
+
+    /// check for ray intersection against z slabs
+    float tzmin = (bounds[    dir_is_neg[2]].z - origin.z) * inv_dir.z;
+    float tzmax = (bounds[1 - dir_is_neg[2]].z - origin.z) * inv_dir.z;
+    tzmax *= 1 + 2 * Gamma(3);
+
+    if (tmin > tzmax || tzmin > tmax) {
+      return false;
+    }
+
+    if (tzmin > tmin) {
+      tmin = tzmin;
+    }
+
+    if (tzmax < tmax) {
+      tmax = tzmax;
+    }
+
+    return (tmin < rtmax) && (tmax > 0);
+  }
     
   float Bounds3::Distance(const Point3& p) const {
     auto dist_2 = DistanceSquared(p);
